@@ -17,10 +17,8 @@ end
 
 if role == "miner" then
   if not turtle then error("the miner must be a turtle") end
-  local tools = require("lib.tools")
-  local l, r = tools.equippedOn("left"), tools.equippedOn("right")
-  if not peripheral.find("geoScanner") then error("setup: equip a geo scanner") end
-  if l ~= "pickaxe" and r ~= "pickaxe" then error("setup: equip a diamond pickaxe") end
+  local ok, err = require("lib.tools").setupMiner()
+  if not ok then error("setup: " .. err) end
   print("Put the turtle in its home spot: PICKUP container on its left,")
   print("COAL container on its right. The shaft is dug up and down behind it.")
   local h = require("config").miner.home or {}

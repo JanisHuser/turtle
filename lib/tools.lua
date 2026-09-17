@@ -49,7 +49,7 @@ function M.equippedOn(which)
   -- Older CC:Tweaked without getEquipped*: infer from the peripheral.
   local t = peripheral.getType(which)
   if t == "modem" then return "modem" end
-  if t == "geoScanner" then return "scanner" end
+  if t == "geo_scanner" or t == "geoScanner" then return "scanner" end
   if t then return "other" end
   if not M.find("pickaxe") then return "pickaxe" end
   return "unknown"
@@ -72,6 +72,46 @@ function M.equip(kind)
     return false, err
   end
   current = kind
+  return true
+end
+
+-- The geo scanner peripheral. Its type is "geo_scanner" in current Advanced
+-- Peripherals and "geoScanner" in older versions.
+function M.scanner()
+  return peripheral.find("geo_scanner") or peripheral.find("geoScanner")
+end
+
+local function sideWith(kind)
+  if M.equippedOn("left") == kind then return "left" end
+  if M.equippedOn("right") == kind then return "right" end
+  return nil
+end
+
+-- One-time setup for the single miner: pickaxe + geo scanner equipped,
+-- taken from the inventory if needed.
+function M.setupMiner()
+  for _, kind in ipairs({ "pickaxe", "scanner" }) do
+    if not sideWith(kind) then
+      local slot = M.find(kind)
+      if not slot then
+        return false, "no " .. kind .. " equipped or in the inventory"
+      end
+      local other = sideWith(kind == "pickaxe" and "scanner" or "pickaxe")
+      turtle.select(slot)
+      local ok, err
+      if other == "left" then ok, err = turtle.equipRight() else ok, err = turtle.equipLeft() end
+      if not ok then return false, "could not equip " .. kind .. ": " .. tostring(err) end
+    end
+  end
+  turtle.select(1)
+  if not M.scanner() then
+    local found = {}
+    for _, name in ipairs(peripheral.getNames()) do
+      found[#found + 1] = name .. "=" .. tostring(peripheral.getType(name))
+    end
+    return false, "geo scanner not found as a peripheral. Peripherals: "
+      .. (#found > 0 and table.concat(found, ", ") or "none")
+  end
   return true
 end
 

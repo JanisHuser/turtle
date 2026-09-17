@@ -29,7 +29,7 @@ end
 local home = settings.get("swarm.home")
 if not home then error("miner: run 'setup miner' first") end
 
-local scanner = peripheral.find("geoScanner")
+local scanner = require("lib.tools").scanner()
 if not scanner then error("miner: no geo scanner equipped") end
 
 local H = nav.HEADING[home.facing]
