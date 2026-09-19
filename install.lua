@@ -9,6 +9,7 @@ local FILES = {
   "setup.lua",
   "install.lua",
   "miner.lua",
+  "atm.lua",
   "worker.lua",
   "home.lua",
   "fly.lua",
