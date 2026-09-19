@@ -10,6 +10,7 @@ local FILES = {
   "install.lua",
   "miner.lua",
   "atm.lua",
+  "ore.lua",
   "worker.lua",
   "home.lua",
   "fly.lua",

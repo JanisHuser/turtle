@@ -30,8 +30,33 @@ for _, a in ipairs(arg) do
   else error("usage: atm [radius] [north|east|south|west]") end
 end
 
-local scanner = peripheral.find("geo_scanner") or peripheral.find("geoScanner")
-if not scanner then error("atm: equip a geo scanner (and a pickaxe)") end
+local scannerName
+for _, name in ipairs(peripheral.getNames()) do
+  local t = peripheral.getType(name)
+  if t == "geo_scanner" or t == "geoScanner" then scannerName = name end
+end
+if not scannerName then
+  local found = {}
+  for _, name in ipairs(peripheral.getNames()) do
+    found[#found + 1] = name .. "=" .. tostring(peripheral.getType(name))
+  end
+  error("atm: equip a geo scanner (and a pickaxe). Peripherals: "
+    .. (#found > 0 and table.concat(found, ", ") or "none"))
+end
+
+-- The scan method's name differs between Advanced Peripherals versions.
+local scanMethod
+local methods = peripheral.getMethods(scannerName) or {}
+for _, want in ipairs({ "scan", "scanBlocks", "scanArea" }) do
+  for _, m in ipairs(methods) do
+    if m == want then scanMethod = want break end
+  end
+  if scanMethod then break end
+end
+if not scanMethod then
+  error("atm: geo scanner has no scan method. Its methods: " .. table.concat(methods, ", "))
+end
+local scanner = { scan = function(r) return peripheral.call(scannerName, scanMethod, r) end }
 
 -- Position relative to where we started, in world axes.
 local x, y, z = 0, 0, 0
